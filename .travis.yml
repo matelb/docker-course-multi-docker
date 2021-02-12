@@ -3,13 +3,16 @@ language: generic
 
 services:
   - docker
-
+#run the tests
+#start
 before_install:
   - docker build -t matelb/react-test -f ./client/Dockerfile.dev ./client
 
 script:
   - docker run -e CI=true matelb/react-test npm test
+#end
 
+#matelb porque asi se llama el dockerId
 after_success:
   - docker build -t matelb/multi-client ./client
   - docker build -t matelb/multi-nginx ./nginx
@@ -22,3 +25,15 @@ after_success:
   - docker push matelb/multi-nginx
   - docker push matelb/multi-server
   - docker push matelb/multi-worker
+
+deploy:
+  provider: elasticbeanstalk
+  region: "us-east-2"
+  app: "multi-docker-course"
+  env: "Multidockercourse-env"
+  bucket_name: "elasticbeanstalk-us-east-2-679253514327"
+  bucket_path: "docker-multi"
+  on:
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key: $AWS_SECRET_KEY
